@@ -12,16 +12,22 @@ model User {
   name          String?
   email         String?   @unique
   emailVerified DateTime?
+  password      String?
   image         String?
   role          String    @default("member") // "admin" | "member"
+  banned        Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts Account[]
-  sessions Session[]
-  posts    Post[]
-  comments Comment[]
-  likes    Like[]
+  accounts     Account[]
+  sessions     Session[]
+  posts        Post[]
+  comments     Comment[]
+  likes        Like[]
+  followers    Follow[]      @relation("Following")
+  following    Follow[]      @relation("Follower")
+  actionLogs   ActionLog[]
+  invitesIssued InviteToken[] @relation("InvitesIssued")
 }
 
 model Account {
@@ -64,6 +70,8 @@ model Post {
   id        String    @id @default(cuid())
   title     String
   content   String
+  verseRef  String?
+  deleted   Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   authorId  String
@@ -76,6 +84,7 @@ model Post {
 model Comment {
   id        String   @id @default(cuid())
   content   String
+  deleted   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   authorId  String
@@ -95,4 +104,41 @@ model Like {
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+model ActionLog {
+  id        String   @id @default(cuid())
+  action    String   // "DELETE_POST" | "BAN_USER" | "UNBAN_USER"
+  targetId  String
+  adminId   String
+  createdAt DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+model InviteToken {
+  id               String    @id @default(cuid())
+  token            String    @unique
+  usedAt           DateTime?
+  createdByAdminId String
+  createdAt        DateTime  @default(now())
+
+  createdByAdmin User @relation("InvitesIssued", fields: [createdByAdminId], references: [id])
+
+  @@index([createdByAdminId])
 }
