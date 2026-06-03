@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NavBar } from "@/components/NavBar";
+import { LeftSidebar } from "@/components/LeftSidebar";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 export default async function MainLayout({
   children,
@@ -10,15 +12,9 @@ export default async function MainLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-  return (
-    <div className="min-h-screen" style={{ background: "#f4f3ec" }}>
-      {session?.user ? (
-        <NavBar
-          userId={session.user.id}
-          userName={session.user.name ?? session.user.email ?? null}
-          role={session.user.role}
-        />
-      ) : (
+  if (!session?.user) {
+    return (
+      <div className="min-h-screen" style={{ background: "#f4f3ec" }}>
         <nav
           className="sticky top-0 z-10 border-b"
           style={{
@@ -43,9 +39,40 @@ export default async function MainLayout({
             </Link>
           </div>
         </nav>
-      )}
+        {children}
+      </div>
+    );
+  }
 
-      {children}
+  const userName = session.user.name ?? session.user.email ?? null;
+
+  return (
+    <div className="min-h-screen" style={{ background: "#f4f3ec" }}>
+      {/* Mobile top bar (hidden on lg) */}
+      <NavBar
+        userId={session.user.id}
+        userName={userName}
+        role={session.user.role}
+      />
+
+      <div className="lg:flex lg:max-w-[1280px] lg:mx-auto">
+        {/* Desktop left rail */}
+        <aside className="hidden lg:block lg:w-[220px] lg:shrink-0">
+          <div className="sticky top-0 h-screen">
+            <LeftSidebar
+              currentUserId={session.user.id}
+              userName={userName}
+              role={session.user.role}
+            />
+          </div>
+        </aside>
+
+        {/* Main content area */}
+        <main className="flex-1 min-w-0 pb-20 lg:pb-0">{children}</main>
+      </div>
+
+      {/* Mobile bottom nav */}
+      <MobileBottomNav currentUserId={session.user.id} />
     </div>
   );
 }

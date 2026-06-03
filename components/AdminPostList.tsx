@@ -5,7 +5,7 @@ import { deletePost } from "@/lib/actions";
 
 interface Post {
   id: string;
-  title: string;
+  title: string | null;
   content: string;
   deleted: boolean;
   createdAt: Date;

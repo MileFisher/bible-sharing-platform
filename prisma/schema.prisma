@@ -70,7 +70,7 @@ model VerificationToken {
 
 model Post {
   id        String    @id @default(cuid())
-  title     String
+  title     String?
   content   String
   verseRef  String?
   deleted   Boolean   @default(false)
