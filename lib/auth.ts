@@ -78,24 +78,34 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       // On first sign-in, copy role from the adapter-provided user
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "member";
       }
 
-      // On every token refresh, re-check banned & role from the database
-      // so bans take effect immediately (not just on next sign-in)
+      // Client-initiated session.update({ name }) — reflect the new name
+      // in the token immediately (e.g. after editing the profile)
+      if (trigger === "update") {
+        const next = session as { name?: string } | undefined;
+        if (typeof next?.name === "string") {
+          token.name = next.name;
+        }
+      }
+
+      // On every token refresh, re-check banned, role & name from the database
+      // so bans take effect immediately and the name stays current
       if (token.sub) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { banned: true, role: true },
+          select: { banned: true, role: true, name: true },
         });
 
         if (dbUser) {
           token.banned = dbUser.banned;
           token.role = dbUser.role;
+          token.name = dbUser.name;
         }
       }
 

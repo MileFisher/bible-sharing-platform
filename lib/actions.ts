@@ -97,3 +97,42 @@ export async function toggleBanUser(userId: string) {
 
   revalidatePath("/admin");
 }
+
+export async function updateProfile(
+  name: string,
+  bio: string
+): Promise<{ userId: string; name: string }> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("You must be signed in to edit your profile.");
+  }
+
+  const userId = session.user.id;
+  const trimmedName = name.trim();
+
+  if (trimmedName.length === 0) {
+    throw new Error("Name is required.");
+  }
+  if (trimmedName.length > 80) {
+    throw new Error("Name must be 80 characters or fewer.");
+  }
+
+  const trimmedBio = bio.trim();
+  if (trimmedBio.length > 280) {
+    throw new Error("Bio must be 280 characters or fewer.");
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name: trimmedName,
+      bio: trimmedBio.length > 0 ? trimmedBio : null,
+    },
+  });
+
+  revalidatePath(`/profile/${userId}`);
+
+  // Navigation + session refresh happen client-side so the new name can be
+  // pushed into the NextAuth JWT via session.update() before redirecting.
+  return { userId, name: trimmedName };
+}

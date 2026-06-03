@@ -14,6 +14,7 @@ export default async function MainLayout({
     <div className="min-h-screen" style={{ background: "#f4f3ec" }}>
       {session?.user ? (
         <NavBar
+          userId={session.user.id}
           userName={session.user.name ?? session.user.email ?? null}
           role={session.user.role}
         />

@@ -4,11 +4,12 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 
 interface NavBarProps {
+  userId: string;
   userName: string | null;
   role: string;
 }
 
-export function NavBar({ userName, role }: NavBarProps) {
+export function NavBar({ userId, userName, role }: NavBarProps) {
   const isAdmin = role === "admin";
 
   return (
@@ -62,15 +63,17 @@ export function NavBar({ userName, role }: NavBarProps) {
             </Link>
           )}
 
-          {/* Avatar initials */}
-          <div
+          {/* Avatar initials — links to own profile */}
+          <Link
+            href={`/profile/${userId}`}
             className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ml-1"
             style={{
               background: "linear-gradient(135deg, #46707e, #3d6672)",
               color: "white",
               fontFamily: "var(--font-inter)",
             }}
-            title={userName ?? "Account"}
+            title={userName ?? "Your profile"}
+            aria-label="Your profile"
           >
             {userName
               ? userName
@@ -80,7 +83,7 @@ export function NavBar({ userName, role }: NavBarProps) {
                   .toUpperCase()
                   .slice(0, 2)
               : "?"}
-          </div>
+          </Link>
 
           <button
             onClick={() => signOut({ callbackUrl: "/auth/signin" })}

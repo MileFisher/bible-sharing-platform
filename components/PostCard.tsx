@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toggleLike } from "@/lib/actions";
 import { FollowButton } from "@/components/FollowButton";
@@ -58,23 +59,28 @@ export function PostCard({
     <article className="card p-5">
       {/* Author row */}
       <div className="flex items-center gap-3 mb-3">
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0"
-          style={{
-            background: "linear-gradient(135deg, #46707e, #3d6672)",
-            color: "white",
-            fontFamily: "var(--font-inter)",
-          }}
-          aria-hidden="true"
+        <Link
+          href={`/profile/${author.id}`}
+          className="flex items-center gap-3 min-w-0 flex-1 group"
         >
-          {initials}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-[#22393c] truncate">
-            {author.name ?? "Anonymous"}
-          </p>
-          <p className="text-xs text-[#7a9198]">{timeAgo}</p>
-        </div>
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #46707e, #3d6672)",
+              color: "white",
+              fontFamily: "var(--font-inter)",
+            }}
+            aria-hidden="true"
+          >
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-[#22393c] truncate group-hover:underline">
+              {author.name ?? "Anonymous"}
+            </p>
+            <p className="text-xs text-[#7a9198]">{timeAgo}</p>
+          </div>
+        </Link>
         {showFollow && (
           <FollowButton
             targetUserId={author.id}
