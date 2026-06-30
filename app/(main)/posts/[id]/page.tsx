@@ -7,7 +7,10 @@ import { LikeButton } from "@/components/LikeButton";
 import { CommentSection } from "@/components/CommentSection";
 import { FollowButton } from "@/components/FollowButton";
 import { TrendingVerses } from "@/components/RightSidebar";
-import { displayTitle, parseContentBlocks } from "@/lib/posts";
+import { displayHeading, parseContentBlocks } from "@/lib/posts";
+import { fetchVerse } from "@/lib/bible";
+import type { Lang } from "@/lib/i18n";
+import { getT } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +31,8 @@ export default async function PostDetailPage({
 }) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
+  const lang: Lang = session?.user?.language === "en" ? "en" : "zh";
+  const strings = getT(lang);
 
   const post = await prisma.post.findFirst({
     where: { id: params.id, deleted: false },
@@ -58,7 +63,7 @@ export default async function PostDetailPage({
     },
     orderBy: { createdAt: "desc" },
     take: 3,
-    select: { id: true, title: true, content: true, verseRef: true },
+    select: { id: true, content: true, verseRef: true },
   });
 
   // Is the viewer following the author?
@@ -75,13 +80,19 @@ export default async function PostDetailPage({
     isFollowingAuthor = Boolean(follow);
   }
 
-  const heading = displayTitle(post.title, post.content);
+  const heading = displayHeading(post.content);
   const blocks = parseContentBlocks(post.content);
   const dateLabel = new Date(post.createdAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
+
+  // Fetch verse text from Bolls API in user's language.
+  const translation = lang === "zh" ? "RCUV" : "WEB";
+  const verseData = post.verseRef
+    ? await fetchVerse(post.verseRef, translation)
+    : null;
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 py-6 lg:py-8">
@@ -91,7 +102,7 @@ export default async function PostDetailPage({
         className="inline-flex items-center gap-1.5 text-sm font-medium text-[#46707e] hover:underline mb-6"
         style={{ fontFamily: "var(--font-inter)" }}
       >
-        ← Feed
+        {strings.backToFeed}
       </Link>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -139,7 +150,19 @@ export default async function PostDetailPage({
             </div>
           )}
 
-          {/* Title */}
+          {/* Fetched verse text */}
+          {verseData && (
+            <blockquote className="verse-callout pl-5 pr-4 py-4 mb-6">
+              <p
+                className="text-[17px] italic text-[#3a4f52] leading-relaxed"
+                style={{ fontFamily: "var(--font-playfair)" }}
+              >
+                {verseData.text}
+              </p>
+            </blockquote>
+          )}
+
+          {/* Heading */}
           <h1
             className="text-[28px] font-bold leading-[1.2] text-[#22393c] mb-6"
             style={{ fontFamily: "var(--font-playfair)" }}
@@ -189,7 +212,7 @@ export default async function PostDetailPage({
               className="text-[18px] font-semibold text-[#22393c] mb-4"
               style={{ fontFamily: "var(--font-playfair)" }}
             >
-              Reflections
+              {strings.reflections}
             </h2>
             <CommentSection
               postId={post.id}
@@ -207,7 +230,7 @@ export default async function PostDetailPage({
                 className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-4 text-[#7a9198]"
                 style={{ fontFamily: "var(--font-inter)" }}
               >
-                More from {post.author.name ?? "this author"}
+                {strings.moreFrom} {post.author.name ?? "this author"}
               </p>
               <ul className="flex flex-col gap-4">
                 {related.map((r) => (
@@ -222,7 +245,7 @@ export default async function PostDetailPage({
                         className="text-sm font-semibold text-[#22393c] leading-snug group-hover:text-[#46707e] transition-colors"
                         style={{ fontFamily: "var(--font-playfair)" }}
                       >
-                        {displayTitle(r.title, r.content)}
+                        {displayHeading(r.content)}
                       </p>
                     </Link>
                   </li>
@@ -231,7 +254,7 @@ export default async function PostDetailPage({
             </div>
           )}
 
-          <TrendingVerses />
+          <TrendingVerses lang={lang} />
         </aside>
       </div>
     </div>

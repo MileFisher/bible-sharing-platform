@@ -2,17 +2,22 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import type { Lang } from "@/lib/i18n";
+import { getT } from "@/lib/i18n";
 
 interface SearchBarProps {
   initialQuery?: string;
   placeholder?: string;
+  lang?: Lang;
 }
 
 export function SearchBar({
   initialQuery = "",
-  placeholder = "Search notes, verses, or members…",
+  placeholder,
+  lang = "zh",
 }: SearchBarProps) {
   const router = useRouter();
+  const strings = getT(lang);
   const [query, setQuery] = useState(initialQuery);
 
   function handleSubmit(e: FormEvent) {
@@ -34,8 +39,8 @@ export function SearchBar({
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder={placeholder}
-        aria-label="Search"
+        placeholder={placeholder ?? strings.searchPlaceholder}
+        aria-label={strings.search}
         className="input-field w-full pl-11"
         style={{ fontFamily: "var(--font-inter)" }}
       />

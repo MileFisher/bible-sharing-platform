@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { PostCard } from "@/components/PostCard";
 import { FollowButton } from "@/components/FollowButton";
+import type { Lang } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export default async function ProfilePage({
 
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
+  const lang: Lang = session?.user?.language === "en" ? "en" : "zh";
   const isOwnProfile = currentUserId === id;
 
   const profile = await prisma.user.findUnique({
@@ -230,7 +232,6 @@ export default async function ProfilePage({
             <PostCard
               key={post.id}
               id={post.id}
-              title={post.title}
               content={post.content}
               verseRef={post.verseRef}
               createdAt={post.createdAt}
@@ -238,6 +239,7 @@ export default async function ProfilePage({
               likeCount={post._count.likes}
               commentCount={post._count.comments}
               isLiked={likedPostIds.has(post.id)}
+              lang={lang}
               currentUserId={currentUserId}
               isFollowingAuthor={isFollowingProfile}
             />

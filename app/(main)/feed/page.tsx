@@ -14,6 +14,8 @@ import {
   isPsalms,
   type FeedTab,
 } from "@/lib/bible";
+import type { Lang } from "@/lib/i18n";
+import { getT } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +28,8 @@ export default async function FeedPage({
 }) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
+  const lang: Lang = session?.user?.language === "en" ? "en" : "zh";
+  const strings = getT(lang);
 
   // Resolve the active tab; "following" falls back to "all" when signed out.
   let tab: FeedTab = isFeedTab(searchParams.tab) ? searchParams.tab : "all";
@@ -92,15 +96,15 @@ export default async function FeedPage({
     <div className="px-4 lg:px-6 py-6">
       {/* Search */}
       <div className="mb-6 max-w-[640px]">
-        <SearchBar />
+        <SearchBar lang={lang} />
       </div>
 
       <div className="xl:flex xl:gap-8">
         {/* Main column */}
         <div className="flex-1 min-w-0">
-          {currentUserId && <NewPostForm />}
+          {currentUserId && <NewPostForm lang={lang} />}
 
-          <FeedTabs activeTab={tab} todayCount={todayCount} />
+          <FeedTabs activeTab={tab} todayCount={todayCount} lang={lang} />
 
           {posts.length === 0 ? (
             <div className="card p-12 text-center">
@@ -109,8 +113,8 @@ export default async function FeedPage({
                 style={{ fontFamily: "var(--font-playfair)" }}
               >
                 {tab === "following"
-                  ? "No notes yet. Follow community members to see their reflections here."
-                  : "No notes to show in this view yet."}
+                  ? strings.noNotesFollowing
+                  : strings.noNotesView}
               </p>
             </div>
           ) : (
@@ -119,7 +123,6 @@ export default async function FeedPage({
                 <PostCard
                   key={post.id}
                   id={post.id}
-                  title={post.title}
                   content={post.content}
                   verseRef={post.verseRef}
                   createdAt={post.createdAt}
@@ -127,6 +130,7 @@ export default async function FeedPage({
                   likeCount={post._count.likes}
                   commentCount={post._count.comments}
                   isLiked={post.likes.length > 0}
+                  lang={lang}
                   currentUserId={currentUserId}
                   isFollowingAuthor={followingIds.has(post.author.id)}
                 />
@@ -137,7 +141,7 @@ export default async function FeedPage({
 
         {/* Right sidebar (desktop xl) */}
         <div className="hidden xl:block w-[280px] shrink-0">
-          <RightSidebar />
+          <RightSidebar lang={lang} />
         </div>
       </div>
     </div>

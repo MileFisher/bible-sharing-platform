@@ -29,11 +29,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const title = content.trim().slice(0, 80) + (content.trim().length > 80 ? "…" : "");
-
   const post = await prisma.post.create({
     data: {
-      title,
       content: content.trim(),
       verseRef: verseRef?.trim() || null,
       authorId: session.user.id,

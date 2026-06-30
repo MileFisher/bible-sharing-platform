@@ -1,17 +1,10 @@
 // Display helpers for rendering post content.
 
 /**
- * The title to show for a post. Uses the explicit title when present,
- * otherwise derives one from the first non-empty line of the content.
+ * Derive a heading from the first non-empty line of content.
+ * Returns up to 80 characters without truncation ellipsis.
  */
-export function displayTitle(
-  title: string | null,
-  content: string,
-  maxLength = 60
-): string {
-  const explicit = title?.trim();
-  if (explicit) return explicit;
-
+export function displayHeading(content: string, maxLength = 80): string {
   const firstLine =
     content
       .split("\n")
@@ -19,7 +12,7 @@ export function displayTitle(
       .find((l) => l.length > 0) ?? "";
 
   if (firstLine.length <= maxLength) return firstLine;
-  return firstLine.slice(0, maxLength).trimEnd() + "…";
+  return firstLine.slice(0, maxLength).trimEnd();
 }
 
 export type ContentBlock =
@@ -69,15 +62,14 @@ export function firstQuote(content: string): string | null {
   return null;
 }
 
-/** Content with blockquote markers and the derived-title line removed,
- *  for a clean preview paragraph. */
-export function previewText(content: string, title: string | null): string {
-  const explicit = title?.trim();
+/**
+ * Content preview with blockquote markers removed and the first non-empty
+ * line dropped (since it's used as the card heading).
+ */
+export function previewText(content: string): string {
   const lines = content.split("\n").map((l) => l.replace(/^\s*>\s?/, ""));
-  // If the title was derived from the first line, drop that line from preview.
-  if (!explicit && lines.length > 0) {
-    const firstIdx = lines.findIndex((l) => l.trim().length > 0);
-    if (firstIdx !== -1) lines.splice(firstIdx, 1);
-  }
+  // Drop the first non-empty line (used as heading).
+  const firstIdx = lines.findIndex((l) => l.trim().length > 0);
+  if (firstIdx !== -1) lines.splice(firstIdx, 1);
   return lines.join(" ").replace(/\s+/g, " ").trim();
 }

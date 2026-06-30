@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { NavBar } from "@/components/NavBar";
 import { LeftSidebar } from "@/components/LeftSidebar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import type { Lang } from "@/lib/i18n";
 
 export default async function MainLayout({
   children,
@@ -45,6 +46,7 @@ export default async function MainLayout({
   }
 
   const userName = session.user.name ?? session.user.email ?? null;
+  const lang: Lang = session.user.language === "en" ? "en" : "zh";
 
   return (
     <div className="min-h-screen" style={{ background: "#f4f3ec" }}>
@@ -53,6 +55,7 @@ export default async function MainLayout({
         userId={session.user.id}
         userName={userName}
         role={session.user.role}
+        lang={lang}
       />
 
       <div className="lg:flex lg:max-w-[1280px] lg:mx-auto">
@@ -63,6 +66,7 @@ export default async function MainLayout({
               currentUserId={session.user.id}
               userName={userName}
               role={session.user.role}
+              lang={lang}
             />
           </div>
         </aside>

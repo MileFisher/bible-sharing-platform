@@ -3,6 +3,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { PostCard } from "@/components/PostCard";
 import { SearchBar } from "@/components/SearchBar";
+import type { Lang } from "@/lib/i18n";
+import { getT } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +15,8 @@ export default async function SearchPage({
 }) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
+  const lang: Lang = session?.user?.language === "en" ? "en" : "zh";
+  const strings = getT(lang);
   const q = searchParams.q?.trim() ?? "";
 
   let posts: Awaited<ReturnType<typeof searchPosts>> = [];
@@ -35,17 +39,17 @@ export default async function SearchPage({
         className="text-[28px] font-semibold mb-5 text-[#22393c]"
         style={{ fontFamily: "var(--font-playfair)" }}
       >
-        Search
+        {strings.searchResults}
       </h1>
 
       <div className="mb-6">
-        <SearchBar initialQuery={q} />
+        <SearchBar initialQuery={q} lang={lang} />
       </div>
 
       {q && (
         <p className="text-sm text-[#7a9198] mb-5">
-          {posts.length} result{posts.length !== 1 ? "s" : ""} for{" "}
-          <span className="font-semibold text-[#22393c]">“{q}”</span>
+          {posts.length} {strings.resultsCount}{" "}
+          <span className="font-semibold text-[#22393c]">&ldquo;{q}&rdquo;</span>
         </p>
       )}
 
@@ -55,7 +59,7 @@ export default async function SearchPage({
             className="text-lg italic text-[#7a9198]"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
-            No notes match your search.
+            {strings.noSearchResults}
           </p>
         </div>
       )}
@@ -65,7 +69,6 @@ export default async function SearchPage({
           <PostCard
             key={post.id}
             id={post.id}
-            title={post.title}
             content={post.content}
             verseRef={post.verseRef}
             createdAt={post.createdAt}
@@ -73,6 +76,7 @@ export default async function SearchPage({
             likeCount={post._count.likes}
             commentCount={post._count.comments}
             isLiked={post.likes.length > 0}
+            lang={lang}
             currentUserId={currentUserId}
             isFollowingAuthor={followingIds.has(post.author.id)}
           />
@@ -89,7 +93,6 @@ async function searchPosts(q: string, currentUserId: string | undefined) {
       OR: [
         { content: { contains: q, mode: "insensitive" } },
         { verseRef: { contains: q, mode: "insensitive" } },
-        { title: { contains: q, mode: "insensitive" } },
         { author: { name: { contains: q, mode: "insensitive" } } },
       ],
     },

@@ -75,6 +75,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub;
         session.user.role = (token.role as string) ?? "member";
         session.user.banned = (token.banned as boolean) ?? false;
+        session.user.language = (token.language as string) ?? "zh";
       }
       return session;
     },
@@ -88,24 +89,28 @@ export const authOptions: NextAuthOptions = {
       // Client-initiated session.update({ name }) — reflect the new name
       // in the token immediately (e.g. after editing the profile)
       if (trigger === "update") {
-        const next = session as { name?: string } | undefined;
+        const next = session as { name?: string; language?: string } | undefined;
         if (typeof next?.name === "string") {
           token.name = next.name;
         }
+        if (typeof next?.language === "string") {
+          token.language = next.language;
+        }
       }
 
-      // On every token refresh, re-check banned, role & name from the database
-      // so bans take effect immediately and the name stays current
+      // On every token refresh, re-check banned, role, name & language from
+      // the database so bans take effect immediately and preferences stay current
       if (token.sub) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { banned: true, role: true, name: true },
+          select: { banned: true, role: true, name: true, language: true },
         });
 
         if (dbUser) {
           token.banned = dbUser.banned;
           token.role = dbUser.role;
           token.name = dbUser.name;
+          token.language = dbUser.language;
         }
       }
 

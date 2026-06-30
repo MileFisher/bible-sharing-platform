@@ -1,17 +1,31 @@
 import Link from "next/link";
 import { FEED_TABS, type FeedTab } from "@/lib/bible";
+import type { Lang } from "@/lib/i18n";
+import { getT } from "@/lib/i18n";
 
 interface FeedTabsProps {
   activeTab: FeedTab;
   todayCount: number;
+  lang?: Lang;
 }
 
-export function FeedTabs({ activeTab, todayCount }: FeedTabsProps) {
+const TAB_LABELS: Record<FeedTab, keyof ReturnType<typeof getT>> = {
+  all: "allNotes",
+  following: "followingTab",
+  nt: "newTestament",
+  ot: "oldTestament",
+  psalms: "psalms",
+};
+
+export function FeedTabs({ activeTab, todayCount, lang = "zh" }: FeedTabsProps) {
+  const strings = getT(lang);
+
   return (
     <div className="flex items-center justify-between gap-4 mb-6 border-b border-[#e8e6dc]">
       <div className="flex gap-1 overflow-x-auto">
         {FEED_TABS.map((t) => {
           const active = t.key === activeTab;
+          const label = strings[TAB_LABELS[t.key]];
           return (
             <Link
               key={t.key}
@@ -23,13 +37,13 @@ export function FeedTabs({ activeTab, todayCount }: FeedTabsProps) {
                 fontFamily: "var(--font-inter)",
               }}
             >
-              {t.label}
+              {label}
             </Link>
           );
         })}
       </div>
       <span className="text-xs text-[#7a9198] whitespace-nowrap shrink-0 hidden sm:block">
-        Showing {todayCount} note{todayCount !== 1 ? "s" : ""} today
+        {strings.showingNotes} · {todayCount}
       </span>
     </div>
   );

@@ -1,18 +1,69 @@
 "use client";
 
-import { useState, useRef, type FormEvent } from "react";
+import { useState, useRef, useCallback, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import type { Lang } from "@/lib/i18n";
+import { getT } from "@/lib/i18n";
 
-export function NewPostForm() {
+interface NewPostFormProps {
+  lang: Lang;
+}
+
+export function NewPostForm({ lang }: NewPostFormProps) {
   const router = useRouter();
+  const strings = getT(lang);
+  const translation = lang === "zh" ? "RCUV" : "WEB";
+
   const [content, setContent] = useState("");
   const [verseRef, setVerseRef] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Verse preview state
+  const [verseText, setVerseText] = useState<string | null>(null);
+  const [verseLoading, setVerseLoading] = useState(false);
+  const [fetchedFor, setFetchedFor] = useState<string>("");
+
   const formRef = useRef<HTMLFormElement>(null);
 
   const contentMax = 2000;
   const isNearLimit = content.length > 1800;
+
+  const fetchVersePreview = useCallback(
+    async (ref: string) => {
+      const trimmed = ref.trim();
+      if (!trimmed) {
+        setVerseText(null);
+        setFetchedFor("");
+        return;
+      }
+      if (trimmed === fetchedFor) return; // already fetched
+
+      setVerseLoading(true);
+      setFetchedFor(trimmed);
+
+      try {
+        const res = await fetch(
+          `/api/verse?ref=${encodeURIComponent(trimmed)}&translation=${translation}`
+        );
+        if (!res.ok) {
+          setVerseText(null);
+          return;
+        }
+        const data = await res.json();
+        setVerseText(data.text ?? null);
+      } catch {
+        setVerseText(null);
+      } finally {
+        setVerseLoading(false);
+      }
+    },
+    [translation, fetchedFor]
+  );
+
+  function handleVerseRefBlur() {
+    fetchVersePreview(verseRef);
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -38,6 +89,8 @@ export function NewPostForm() {
 
       setContent("");
       setVerseRef("");
+      setVerseText(null);
+      setFetchedFor("");
       formRef.current?.reset();
       router.refresh();
     } catch (err) {
@@ -60,17 +113,45 @@ export function NewPostForm() {
           className="block text-[11px] font-semibold uppercase tracking-[0.1em] text-[#7a9198] mb-1.5"
           style={{ fontFamily: "var(--font-inter)" }}
         >
-          Bible Reference
+          {strings.verseRef}
         </label>
         <input
           id="verseRef"
           type="text"
           value={verseRef}
-          onChange={(e) => setVerseRef(e.target.value)}
-          placeholder="e.g. John 3:16, Psalm 23, Romans 8…"
+          onChange={(e) => {
+            setVerseRef(e.target.value);
+            // Clear preview when user edits
+            if (verseText) {
+              setVerseText(null);
+              setFetchedFor("");
+            }
+          }}
+          onBlur={handleVerseRefBlur}
+          placeholder={strings.verseRefPlaceholder}
           className="input-field w-full"
           style={{ fontFamily: "var(--font-inter)" }}
         />
+
+        {/* Verse preview */}
+        {verseLoading && (
+          <p
+            className="mt-2 text-xs italic text-[#7a9198]"
+            style={{ fontFamily: "var(--font-inter)" }}
+          >
+            Loading verse…
+          </p>
+        )}
+        {verseText && !verseLoading && (
+          <blockquote className="verse-callout mt-3 pl-5 pr-4 py-3">
+            <p
+              className="text-[15px] italic text-[#3a4f52] leading-relaxed"
+              style={{ fontFamily: "var(--font-playfair)" }}
+            >
+              {verseText}
+            </p>
+          </blockquote>
+        )}
       </div>
 
       {/* Content textarea */}
@@ -80,13 +161,13 @@ export function NewPostForm() {
           className="block text-[11px] font-semibold uppercase tracking-[0.1em] text-[#7a9198] mb-1.5"
           style={{ fontFamily: "var(--font-inter)" }}
         >
-          Your Note
+          {strings.shareNote}
         </label>
         <textarea
           id="content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="What did this verse reveal to you?"
+          placeholder={strings.contentPlaceholder}
           rows={4}
           maxLength={contentMax}
           className="input-field w-full resize-y min-h-[120px]"
@@ -119,7 +200,7 @@ export function NewPostForm() {
           disabled={isSubmitting || !content.trim()}
           className="btn-primary"
         >
-          {isSubmitting ? "Publishing…" : "Publish Note"}
+          {isSubmitting ? strings.posting : strings.post}
         </button>
       </div>
     </form>

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import type { Lang } from "@/lib/i18n";
 
 async function requireAdmin(): Promise<string> {
   const session = await getServerSession(authOptions);
@@ -135,4 +136,22 @@ export async function updateProfile(
   // Navigation + session refresh happen client-side so the new name can be
   // pushed into the NextAuth JWT via session.update() before redirecting.
   return { userId, name: trimmedName };
+}
+
+export async function updateLanguage(lang: Lang): Promise<void> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("You must be signed in.");
+  }
+
+  if (lang !== "zh" && lang !== "en") {
+    throw new Error("Invalid language.");
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { language: lang },
+  });
+
+  revalidatePath("/feed");
 }

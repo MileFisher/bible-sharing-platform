@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import type { Lang } from "@/lib/i18n";
 
 interface NavBarProps {
   userId: string;
   userName: string | null;
   role: string;
+  lang?: Lang;
 }
 
 export function NavBar({ userId, userName }: NavBarProps) {

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { verseOfTheDay } from "@/lib/bible";
+import { verseOfTheDay, fetchVerse } from "@/lib/bible";
+import type { Lang } from "@/lib/i18n";
+import { getT } from "@/lib/i18n";
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -14,9 +16,16 @@ function initials(name: string | null): string {
     .slice(0, 2);
 }
 
-/** ① Verse of the Day — rotating dark teal card. */
-export function VerseOfTheDay() {
+/** ① Verse of the Day — fetches live text from Bolls API in user's language. */
+export async function VerseOfTheDay({ lang = "zh" }: { lang?: Lang }) {
+  const strings = getT(lang);
   const verse = verseOfTheDay();
+  const translation = lang === "zh" ? "RCUV" : "WEB";
+
+  // Try to fetch live verse text; fall back to hardcoded English.
+  const fetched = await fetchVerse(verse.ref, translation);
+  const displayText = fetched?.text ?? verse.text;
+
   return (
     <div
       className="rounded-[14px] p-5"
@@ -26,13 +35,13 @@ export function VerseOfTheDay() {
         className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-3"
         style={{ color: "#afbb98", fontFamily: "var(--font-inter)" }}
       >
-        Verse of the Day
+        {strings.verseOfTheDay}
       </p>
       <p
         className="text-[17px] italic leading-snug mb-3"
         style={{ fontFamily: "var(--font-playfair)" }}
       >
-        &ldquo;{verse.text}&rdquo;
+        &ldquo;{displayText}&rdquo;
       </p>
       <p
         className="text-[13px]"
@@ -45,7 +54,8 @@ export function VerseOfTheDay() {
 }
 
 /** ② Trending Verses — top referenced passages over the last 7 days. */
-export async function TrendingVerses() {
+export async function TrendingVerses({ lang = "zh" }: { lang?: Lang }) {
+  const strings = getT(lang);
   const since = new Date(Date.now() - SEVEN_DAYS_MS);
 
   const grouped = await prisma.post.groupBy({
@@ -66,13 +76,12 @@ export async function TrendingVerses() {
         className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-4 text-[#7a9198]"
         style={{ fontFamily: "var(--font-inter)" }}
       >
-        Trending Verses
-        <span className="ml-1 text-[#b5b4a6]">· this week</span>
+        {strings.trendingVerses}
       </p>
 
       {grouped.length === 0 ? (
         <p className="text-sm italic text-[#7a9198]">
-          No trending verses yet this week.
+          {strings.noTrending}
         </p>
       ) : (
         <ul className="flex flex-col gap-3.5">
@@ -93,7 +102,7 @@ export async function TrendingVerses() {
                     {row.verseRef}
                   </p>
                   <p className="text-xs text-[#7a9198]">
-                    {count} note{count !== 1 ? "s" : ""}
+                    {count} {strings.notes}
                   </p>
                 </div>
                 <span
@@ -112,7 +121,8 @@ export async function TrendingVerses() {
 }
 
 /** ③ Active Members — most prolific authors over the last 7 days. */
-export async function ActiveMembers() {
+export async function ActiveMembers({ lang = "zh" }: { lang?: Lang }) {
+  const strings = getT(lang);
   const since = new Date(Date.now() - SEVEN_DAYS_MS);
 
   const grouped = await prisma.post.groupBy({
@@ -140,15 +150,15 @@ export async function ActiveMembers() {
           className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7a9198]"
           style={{ fontFamily: "var(--font-inter)" }}
         >
-          Active Members
+          {strings.activeMembers}
         </p>
         <Link href="/members" className="text-xs font-medium text-[#46707e]">
-          All members
+          {strings.allMembers}
         </Link>
       </div>
 
       {ordered.length === 0 ? (
-        <p className="text-sm italic text-[#7a9198]">No activity yet this week.</p>
+        <p className="text-sm italic text-[#7a9198]">{strings.noActivity}</p>
       ) : (
         <div className="grid grid-cols-4 gap-3">
           {ordered.map((u) => (
@@ -202,12 +212,12 @@ export function UpcomingStudy() {
 }
 
 /** Composed right sidebar used on the feed. */
-export function RightSidebar() {
+export function RightSidebar({ lang = "zh" }: { lang?: Lang }) {
   return (
     <aside className="flex flex-col gap-5">
-      <VerseOfTheDay />
-      <TrendingVerses />
-      <ActiveMembers />
+      <VerseOfTheDay lang={lang} />
+      <TrendingVerses lang={lang} />
+      <ActiveMembers lang={lang} />
       <UpcomingStudy />
     </aside>
   );

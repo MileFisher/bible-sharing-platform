@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toggleLike } from "@/lib/actions";
 import { FollowButton } from "@/components/FollowButton";
-import { displayTitle, previewText, firstQuote } from "@/lib/posts";
+import { displayHeading, previewText, firstQuote } from "@/lib/posts";
 import { bookFromVerseRef } from "@/lib/bible";
+import type { Lang } from "@/lib/i18n";
+import { getT } from "@/lib/i18n";
 
 interface PostCardProps {
   id: string;
-  title: string | null;
   content: string;
   verseRef: string | null;
   createdAt: Date;
@@ -21,13 +22,13 @@ interface PostCardProps {
   likeCount: number;
   commentCount: number;
   isLiked: boolean;
+  lang?: Lang;
   currentUserId?: string;
   isFollowingAuthor?: boolean;
 }
 
 export function PostCard({
   id,
-  title,
   content,
   verseRef,
   createdAt,
@@ -35,9 +36,11 @@ export function PostCard({
   likeCount,
   commentCount,
   isLiked,
+  lang = "zh",
   currentUserId,
   isFollowingAuthor = false,
 }: PostCardProps) {
+  const strings = getT(lang);
   const [isPending, startTransition] = useTransition();
   const [liked, setLiked] = useState(isLiked);
   const [likes, setLikes] = useState(likeCount);
@@ -53,8 +56,8 @@ export function PostCard({
     : "?";
 
   const timeAgo = getTimeAgo(new Date(createdAt));
-  const heading = displayTitle(title, content);
-  const preview = previewText(content, title);
+  const heading = displayHeading(content);
+  const preview = previewText(content);
   const quote = firstQuote(content);
   const book = bookFromVerseRef(verseRef);
   const href = `/posts/${id}`;
@@ -62,7 +65,6 @@ export function PostCard({
   const showFollow = Boolean(currentUserId) && currentUserId !== author.id;
 
   function handleLike() {
-    // Optimistic toggle, then persist via the server action.
     setLiked((prev) => !prev);
     setLikes((prev) => prev + (liked ? -1 : 1));
     startTransition(() => toggleLike(id));
@@ -203,7 +205,7 @@ export function PostCard({
           className="ml-auto text-sm font-semibold text-[#46707e] hover:underline"
           style={{ fontFamily: "var(--font-inter)" }}
         >
-          Read →
+          {strings.readMore}
         </Link>
       </div>
     </article>
