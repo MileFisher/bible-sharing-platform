@@ -54,6 +54,10 @@ export default async function FeedPage({
       where: { userId: currentUserId ?? "" },
       select: { id: true },
     },
+    bookmarks: {
+      where: { userId: currentUserId ?? "" },
+      select: { id: true },
+    },
   } satisfies Prisma.PostInclude;
 
   type FeedPost = Prisma.PostGetPayload<{ include: typeof include }>;
@@ -130,6 +134,7 @@ export default async function FeedPage({
                   likeCount={post._count.likes}
                   commentCount={post._count.comments}
                   isLiked={post.likes.length > 0}
+                  isBookmarked={post.bookmarks.length > 0}
                   lang={lang}
                   currentUserId={currentUserId}
                   isFollowingAuthor={followingIds.has(post.author.id)}

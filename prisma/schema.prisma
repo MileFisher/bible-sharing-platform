@@ -27,6 +27,7 @@ model User {
   posts        Post[]
   comments     Comment[]
   likes        Like[]
+  bookmarks    Bookmark[]
   followers    Follow[]      @relation("Following")
   following    Follow[]      @relation("Follower")
   actionLogs   ActionLog[]
@@ -79,8 +80,9 @@ model Post {
   authorId  String
 
   author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  comments Comment[]
-  likes    Like[]
+  comments  Comment[]
+  likes     Like[]
+  bookmarks Bookmark[]
 }
 
 model Comment {
@@ -97,6 +99,18 @@ model Comment {
 }
 
 model Like {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  userId    String
+  postId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}
+
+model Bookmark {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   userId    String

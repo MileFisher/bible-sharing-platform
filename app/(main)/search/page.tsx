@@ -76,6 +76,7 @@ export default async function SearchPage({
             likeCount={post._count.likes}
             commentCount={post._count.comments}
             isLiked={post.likes.length > 0}
+            isBookmarked={post.bookmarks.length > 0}
             lang={lang}
             currentUserId={currentUserId}
             isFollowingAuthor={followingIds.has(post.author.id)}
@@ -104,6 +105,10 @@ async function searchPosts(q: string, currentUserId: string | undefined) {
         select: { likes: true, comments: { where: { deleted: false } } },
       },
       likes: {
+        where: { userId: currentUserId ?? "" },
+        select: { id: true },
+      },
+      bookmarks: {
         where: { userId: currentUserId ?? "" },
         select: { id: true },
       },

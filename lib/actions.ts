@@ -42,6 +42,32 @@ export async function toggleLike(postId: string) {
   revalidatePath("/feed");
 }
 
+export async function toggleBookmark(postId: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("You must be signed in to bookmark a post.");
+  }
+
+  const userId = session.user.id;
+
+  const existing = await prisma.bookmark.findUnique({
+    where: {
+      userId_postId: { userId, postId },
+    },
+  });
+
+  if (existing) {
+    await prisma.bookmark.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.bookmark.create({
+      data: { userId, postId },
+    });
+  }
+
+  revalidatePath("/feed");
+  revalidatePath("/bookmarks");
+}
+
 export async function deletePost(postId: string) {
   const adminId = await requireAdmin();
 

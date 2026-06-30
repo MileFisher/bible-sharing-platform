@@ -103,14 +103,22 @@ export default async function ProfilePage({
     take: 50,
   });
 
-  // Which of these posts the current viewer has liked
+  // Which of these posts the current viewer has liked / bookmarked
   let likedPostIds = new Set<string>();
+  let bookmarkedPostIds = new Set<string>();
   if (currentUserId && posts.length > 0) {
-    const likes = await prisma.like.findMany({
-      where: { userId: currentUserId, postId: { in: posts.map((p) => p.id) } },
-      select: { postId: true },
-    });
+    const [likes, bookmarks] = await Promise.all([
+      prisma.like.findMany({
+        where: { userId: currentUserId, postId: { in: posts.map((p) => p.id) } },
+        select: { postId: true },
+      }),
+      prisma.bookmark.findMany({
+        where: { userId: currentUserId, postId: { in: posts.map((p) => p.id) } },
+        select: { postId: true },
+      }),
+    ]);
     likedPostIds = new Set(likes.map((l) => l.postId));
+    bookmarkedPostIds = new Set(bookmarks.map((b) => b.postId));
   }
 
   return (
@@ -239,6 +247,7 @@ export default async function ProfilePage({
               likeCount={post._count.likes}
               commentCount={post._count.comments}
               isLiked={likedPostIds.has(post.id)}
+              isBookmarked={bookmarkedPostIds.has(post.id)}
               lang={lang}
               currentUserId={currentUserId}
               isFollowingAuthor={isFollowingProfile}

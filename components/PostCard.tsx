@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { toggleLike } from "@/lib/actions";
+import { toggleLike, toggleBookmark } from "@/lib/actions";
 import { FollowButton } from "@/components/FollowButton";
 import { displayHeading, previewText, firstQuote } from "@/lib/posts";
 import type { Lang } from "@/lib/i18n";
@@ -21,6 +21,7 @@ interface PostCardProps {
   likeCount: number;
   commentCount: number;
   isLiked: boolean;
+  isBookmarked?: boolean;
   lang?: Lang;
   currentUserId?: string;
   isFollowingAuthor?: boolean;
@@ -35,6 +36,7 @@ export function PostCard({
   likeCount,
   commentCount,
   isLiked,
+  isBookmarked = false,
   lang = "zh",
   currentUserId,
   isFollowingAuthor = false,
@@ -43,7 +45,7 @@ export function PostCard({
   const [isPending, startTransition] = useTransition();
   const [liked, setLiked] = useState(isLiked);
   const [likes, setLikes] = useState(likeCount);
-  const [bookmarked, setBookmarked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(isBookmarked);
 
   const initials = author.name
     ? author.name
@@ -66,6 +68,11 @@ export function PostCard({
     setLiked((prev) => !prev);
     setLikes((prev) => prev + (liked ? -1 : 1));
     startTransition(() => toggleLike(id));
+  }
+
+  function handleBookmark() {
+    setBookmarked((prev) => !prev);
+    startTransition(() => toggleBookmark(id));
   }
 
   return (
@@ -170,10 +177,11 @@ export function PostCard({
           <span>{commentCount}</span>
         </Link>
 
-        {/* Bookmark (UI only) */}
+        {/* Bookmark */}
         <button
-          onClick={() => setBookmarked((b) => !b)}
-          className="flex items-center text-sm transition-colors"
+          onClick={handleBookmark}
+          disabled={isPending || !currentUserId}
+          className="flex items-center text-sm transition-colors disabled:opacity-50"
           style={{ color: bookmarked ? "#46707e" : "#7a9198" }}
           aria-label={bookmarked ? "Remove bookmark" : "Bookmark this post"}
           aria-pressed={bookmarked}
