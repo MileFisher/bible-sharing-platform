@@ -20,7 +20,7 @@ function initials(name: string | null): string {
 export async function VerseOfTheDay({ lang = "zh" }: { lang?: Lang }) {
   const strings = getT(lang);
   const verse = verseOfTheDay();
-  const translation = lang === "zh" ? "RCUV" : "WEB";
+  const translation = lang === "zh" ? "CUV" : "WEB";
 
   // Try to fetch live verse text; fall back to hardcoded English.
   const fetched = await fetchVerse(verse.ref, translation);

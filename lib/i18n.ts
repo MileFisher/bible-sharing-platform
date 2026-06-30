@@ -25,7 +25,7 @@ export const t = {
     adminDashboard: "管理員儀表板",
     signOut: "登出",
     language: "語言",
-    bibleTranslation: "新標點和合本 (RCUV)",
+    bibleTranslation: "和合本 (CUV)",
     community: "社群",
     trendingSection: "熱門經文",
     readingPlan: "閱讀計劃",

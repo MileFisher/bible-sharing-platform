@@ -12,7 +12,7 @@ interface NewPostFormProps {
 export function NewPostForm({ lang }: NewPostFormProps) {
   const router = useRouter();
   const strings = getT(lang);
-  const translation = lang === "zh" ? "RCUV" : "WEB";
+  const translation = lang === "zh" ? "CUV" : "WEB";
 
   const [content, setContent] = useState("");
   const [verseRef, setVerseRef] = useState("");

@@ -289,12 +289,12 @@ interface BollsVerse {
 
 /**
  * Fetch verse text from the Bolls Bible API.
- * translation: "RCUV" (Traditional Chinese) or "WEB" (English).
+ * translation: "CUV" (Traditional Chinese) or "WEB" (English).
  * Returns the joined verse text and the original reference, or null on failure.
  */
 export async function fetchVerse(
   ref: string,
-  translation: "RCUV" | "WEB"
+  translation: "CUV" | "WEB"
 ): Promise<{ text: string; reference: string } | null> {
   const parsed = parseVerseRef(ref);
   if (!parsed) return null;

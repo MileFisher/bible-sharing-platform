@@ -80,7 +80,6 @@ export default async function PostDetailPage({
     isFollowingAuthor = Boolean(follow);
   }
 
-  const heading = displayHeading(post.content);
   const blocks = parseContentBlocks(post.content);
   const dateLabel = new Date(post.createdAt).toLocaleDateString("en-US", {
     month: "short",
@@ -89,7 +88,7 @@ export default async function PostDetailPage({
   });
 
   // Fetch verse text from Bolls API in user's language.
-  const translation = lang === "zh" ? "RCUV" : "WEB";
+  const translation = lang === "zh" ? "CUV" : "WEB";
   const verseData = post.verseRef
     ? await fetchVerse(post.verseRef, translation)
     : null;
@@ -161,14 +160,6 @@ export default async function PostDetailPage({
               </p>
             </blockquote>
           )}
-
-          {/* Heading */}
-          <h1
-            className="text-[28px] font-bold leading-[1.2] text-[#22393c] mb-6"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
-            {heading}
-          </h1>
 
           {/* Content with blockquote support */}
           <div className="flex flex-col gap-4 mb-8">

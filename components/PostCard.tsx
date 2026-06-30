@@ -5,7 +5,6 @@ import { useState, useTransition } from "react";
 import { toggleLike } from "@/lib/actions";
 import { FollowButton } from "@/components/FollowButton";
 import { displayHeading, previewText, firstQuote } from "@/lib/posts";
-import { bookFromVerseRef } from "@/lib/bible";
 import type { Lang } from "@/lib/i18n";
 import { getT } from "@/lib/i18n";
 
@@ -59,7 +58,6 @@ export function PostCard({
   const heading = displayHeading(content);
   const preview = previewText(content);
   const quote = firstQuote(content);
-  const book = bookFromVerseRef(verseRef);
   const href = `/posts/${id}`;
 
   const showFollow = Boolean(currentUserId) && currentUserId !== author.id;
@@ -137,13 +135,6 @@ export function PostCard({
           </p>
         )}
       </Link>
-
-      {/* Tags */}
-      {book && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          <span className="tag-chip">{book}</span>
-        </div>
-      )}
 
       {/* Action bar */}
       <div className="flex items-center gap-5 pt-3 border-t border-[#e8e6dc] mt-auto">

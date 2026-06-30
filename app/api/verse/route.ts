@@ -12,9 +12,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Missing ref parameter" }, { status: 400 });
   }
 
-  if (translation !== "RCUV" && translation !== "WEB") {
+  if (translation !== "CUV" && translation !== "WEB") {
     return NextResponse.json(
-      { error: "translation must be RCUV or WEB" },
+      { error: "translation must be CUV or WEB" },
       { status: 400 }
     );
   }
