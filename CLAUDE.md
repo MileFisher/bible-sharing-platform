@@ -33,3 +33,9 @@
 - Invite-only registration — do not build open sign-up
 - Admin role can delete posts and block users; member role can post/comment/like
 - LINE Messaging API for daily reminders — not LINE Notify (deprecated)
+
+## Code Review Workflow
+After completing any implementation task:
+1. Run `opencode run "Review the changes I just made. List issues or say READY_TO_COMMIT"`
+2. If issues are found, fix them and repeat step 1
+3. Only stop when OpenCode responds with READY_TO_COMMIT
