@@ -39,3 +39,6 @@ After completing any implementation task:
 1. Run `opencode run "Review the changes I just made. List issues or say READY_TO_COMMIT"`
 2. If issues are found, fix them and repeat step 1
 3. Only stop when OpenCode responds with READY_TO_COMMIT
+
+## Git commit conventions
+Never add a Co-Authored-By: Claude trailer or "Generated with Claude Code" line to commit messages.
