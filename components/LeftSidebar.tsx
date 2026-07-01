@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useOptimistic, useTransition } from "react";
 import type { ReactNode } from "react";
@@ -52,6 +52,7 @@ export function LeftSidebar({
   unreadCount = 3,
 }: LeftSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const strings = getT(lang);
   const isAdmin = role === "admin";
 
@@ -66,6 +67,8 @@ export function LeftSidebar({
     startTransition(async () => {
       setOptimisticLang(newLang);
       await updateLanguage(newLang);
+      // Trigger a client-side re-fetch — shows loading.tsx skeleton while data loads
+      router.refresh();
     });
   }
 
