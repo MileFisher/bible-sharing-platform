@@ -189,28 +189,6 @@ export async function ActiveMembers({ lang = "zh" }: { lang?: Lang }) {
   );
 }
 
-/** ④ Upcoming Study — static placeholder card matching the design reference. */
-export function UpcomingStudy() {
-  return (
-    <div className="card p-5">
-      <p
-        className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-3 text-[#7a9198]"
-        style={{ fontFamily: "var(--font-inter)" }}
-      >
-        Upcoming Study
-      </p>
-      <p
-        className="text-[15px] font-semibold mb-1 text-[#22393c]"
-        style={{ fontFamily: "var(--font-playfair)" }}
-      >
-        The Sermon on the Mount
-      </p>
-      <p className="text-xs text-[#7a9198] mb-3">Matthew 5–7 · Sunday, 10:00 AM</p>
-      <span className="tag-chip">Group Study</span>
-    </div>
-  );
-}
-
 /** Composed right sidebar used on the feed. */
 export function RightSidebar({ lang = "zh" }: { lang?: Lang }) {
   return (
@@ -218,7 +196,6 @@ export function RightSidebar({ lang = "zh" }: { lang?: Lang }) {
       <VerseOfTheDay lang={lang} />
       <TrendingVerses lang={lang} />
       <ActiveMembers lang={lang} />
-      <UpcomingStudy />
     </aside>
   );
 }

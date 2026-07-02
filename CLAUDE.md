@@ -42,3 +42,5 @@ After completing any implementation task:
 
 ## Git commit conventions
 Never add a Co-Authored-By: Claude trailer or "Generated with Claude Code" line to commit messages.
+
+
